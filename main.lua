@@ -1,103 +1,195 @@
--- local image
--- local imageData
+-- function newButton(text, fn)
+-- 	return {
+-- 			text = text,
+-- 			fn = fn,
 
--- local screen_w, screen_h
--- local image_w, image_h
--- local scale_x, scale_y
+--             next = false,
+--             last = false,
+-- 		}
+-- end
 
--- -- Load something, for example i want load some image
+-- local buttons = {}
+-- local font = nil
+
 -- function love.load()
--- 	-- love.graphics.print("Hello World!", 400, 300)
+-- 	font = love.graphics.newFont(32)
 
--- 	-- Load the original Image
--- 	imageData = love.image.newImageData("hatsune-miku-4.jpg")
+-- 	table.insert(buttons, newButton (
+-- 		"Start Game",
+-- 		function()
+-- 			print("Start Game")
+-- 		end
+-- 	))
 
--- 	-- Convert and save as PNG
---     imageData:encode("png", "hatsune-miku-4.png")
+-- 	table.insert(buttons, newButton (
+-- 		"Options",
+-- 		function()
+-- 			print("Options")
+-- 		end
+-- 	))
 
--- 	-- Create drawable Image for drawing
---     image = love.graphics.newImage(imageData)
-	
--- 	-- If you want to save the encoded image data that can be renamed
--- 	-- love.filesystem.write("hatsune-miku-4.png", encodedImageData)
--- 	-- The image will saved to ~/.local/share/love/<nama_game>/ -> Arch, if youre windows find it by yourself :v
+-- 	table.insert(buttons, newButton (
+-- 		"Quit",
+-- 		function()
+-- 			print("Quit")
+-- 		end
+-- 	))
 -- end
-
--- -- Draw it here by using love.draw
--- function love.draw()
--- 	screen_w = love.graphics.getWidth()
--- 	screen_h = love.graphics.getHeight()
-
--- 	image_w = image:getWidth()
--- 	image_h = image:getHeight()
-
--- 	scale_x = screen_w / image_w
--- 	scale_y = screen_h / image_h
-
--- 	love.graphics.draw(image, 0, 0, 0, scale_x, scale_y)
--- end
-
-function love.load()
-	animation = newAnimation(love.graphics.newImage("heart.png"), 32, 32, 1)
-end
 
 -- function love.update(dt)
--- 	if animation.isPlaying == true then
--- 		animation.currentTime = animation.currentTime + dt
--- 		if animation.currentTime >= animation.duration then
--- 			animation.currentTime = animation.currentTime - animation.duration
--- 			animation.isPlaying = false
--- 		end
--- 	end
--- 	-- animation.currentTime = animation.currentTime + dt
--- 	-- if animation.currentTime >= animation.duration then
--- 	-- 	animation.currentTime = animation.currentTime - animation.duration
--- 	-- end
 -- end
 
-function love.keypressed(key)
-	if key == "space" then
-		-- animation.isPlaying = true
-		-- animation.currentTime = 0
-		-- Take other frame
-		local spriteNum = math.floor(animation.currentTime / animation.duration * #animation.quads) + 1
+-- function love.draw()
+-- 	w = love.graphics.getWidth()
+-- 	h = love.graphics.getHeight()
 
-		-- Adjust duration to change frame rate
-		animation.currentTime = animation.currentTime + animation.duration / #animation.quads
+-- 	local bw = w * (1/4)
+-- 	local bh = 64 
 
-		-- If the duration is more than the total duration, reset it
-		if animation.currentTime >= animation.duration then
-			-- if you want to not loop, uncomment this
-			-- animation.currentTime = animation.duration
+-- 	local margin = 16
 
-			-- if you want to loop, uncomment this
-			animation.currentTime = animation.currentTime - animation.duration
+-- 	local total_height = (bh + margin) * #buttons
 
-			-- or you can set it to 0
-			-- animation.currentTime = 0
+-- 	local cursor_y = 0
+
+--     -- Append all Buttons from Button {}
+-- 	for i, button in ipairs(buttons) do
+--         button.now = button.last
+
+-- 		local pos_x = (w * 0.5) - (bw * 0.5)
+-- 		local pos_y = (h * 0.5) - (bh * 0.5) - (total_height * 0.5) + cursor_y
+
+--         -- Button Color
+--         local color = {0.4, 0.4, 0.5, 1}
+
+--         -- Get mouse position
+--         local mx, my = love.mouse.getPosition()
+
+--         -- Check if mouse is over button
+--         local hovered = mx >= pos_x and mx <= pos_x + bw and my >= pos_y and my <= pos_y + bh
+
+--         -- Change color if hovered
+--         if hovered then
+--             color = {0.9, 0.9, 1, 1}
+--         end
+
+--         -- Background rectangle
+--         local unpack = unpack or table.unpack
+-- 		love.graphics.setColor(unpack(color))
+-- 		love.graphics.rectangle(
+-- 			"fill",
+-- 			pos_x,
+-- 			pos_y,
+-- 			bw,
+-- 			bh
+-- 		)
+		
+--         -- Text
+-- 		love.graphics.setColor(0, 0, 0, 1)
+
+--         local text_width = font:getWidth(button.text)
+--         local text_height = font:getHeight(button.text)
+        
+-- 		love.graphics.print(
+-- 			button.text,
+-- 			font,
+-- 			(w * 0.5) - text_width * 0.5,
+--             pos_y + text_height * 0.5
+-- 		)
+
+-- 		cursor_y = cursor_y + (bh + margin)
+-- 	end
+-- end
+local buttons = {}
+local font = nil
+
+-- screen / button layout vars
+local w = 0
+local h = 0
+local bw = 0
+local bh = 0
+local margin = 0
+local total_height = 0
+local cursor_y = 0
+
+function newButton(text, fn)
+	return {
+		text = text,
+		fn = fn,
+	}
+end
+
+function love.mousepressed(x, y, button, istouch, presses)
+	if button == 1 then -- left click
+		w = love.graphics.getWidth()
+		h = love.graphics.getHeight()
+
+		bw = w * (1/4)
+		bh = 64
+		margin = 16
+		total_height = (bh + margin) * #buttons
+		cursor_y = 0
+
+		for _, b in ipairs(buttons) do
+			local pos_x = (w * 0.5) - (bw * 0.5)
+			local pos_y = (h * 0.5) - (bh * 0.5) - (total_height * 0.5) + cursor_y
+
+			if x >= pos_x and x <= pos_x + bw and y >= pos_y and y <= pos_y + bh then
+				b.fn() -- run once per click
+			end
+
+			cursor_y = cursor_y + (bh + margin)
 		end
 	end
+end
+
+function love.load()
+	font = love.graphics.newFont(32)
+
+	table.insert(buttons, newButton("Start Game", function() print("Start Game") end))
+	table.insert(buttons, newButton("Options", function() print("Options") end))
+	table.insert(buttons, newButton("Quit", function() print("Quit") end))
+end
+
+function love.update(dt)
 end
 
 function love.draw()
-    local spriteNum = math.floor(animation.currentTime / animation.duration * #animation.quads) + 1
-    love.graphics.draw(animation.spriteSheet, animation.quads[spriteNum], 0, 0, 0, 4)
-end
+	w = love.graphics.getWidth()
+	h = love.graphics.getHeight()
 
-function newAnimation(image, width, height, duration)
-	local animation = {}
-	animation.spriteSheet = image
-	animation.quads = {}
+	bw = w * (1/4)
+	bh = 64
+	margin = 16
+	total_height = (bh + margin) * #buttons
+	cursor_y = 0
 
-	for y = 0, image:getHeight() - height, height do
-		for x = 0, image:getWidth() - width, width do
-			table.insert(animation.quads, love.graphics.newQuad(x, y, width, height, image:getDimensions()))
+	for _, b in ipairs(buttons) do
+		local pos_x = (w * 0.5) - (bw * 0.5)
+		local pos_y = (h * 0.5) - (bh * 0.5) - (total_height * 0.5) + cursor_y
+
+		local mx, my = love.mouse.getPosition()
+		local hovered = mx >= pos_x and mx <= pos_x + bw and my >= pos_y and my <= pos_y + bh
+
+		local color = {0.4, 0.4, 0.5, 1}
+		if hovered then
+			color = {0.9, 0.9, 1, 1}
 		end
+
+		love.graphics.setColor(color)
+		love.graphics.rectangle("fill", pos_x, pos_y, bw, bh)
+
+		-- text centered
+		love.graphics.setColor(0, 0, 0, 1)
+		local text_width = font:getWidth(b.text)
+		local text_height = font:getHeight(b.text)
+		love.graphics.print(
+			b.text,
+			font,
+			(w * 0.5) - text_width * 0.5,
+			pos_y + (bh * 0.5) - (text_height * 0.5)
+		)
+
+		cursor_y = cursor_y + (bh + margin)
 	end
-
-	animation.duration = duration or 1
-	animation.currentTime = 0
-	animation.isPlaying = false
-
-	return animation
 end
